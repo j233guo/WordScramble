@@ -46,6 +46,14 @@ struct ContentView: View {
             wordError(title: "Word not recognized", message: "You cannot just make them up, you know")
             return
         }
+        guard isShort(word: answer) else {
+            wordError(title: "Word too short", message: "Words are at least 3 characters")
+            return
+        }
+        guard isSame(word: answer) else {
+            wordError(title: "Word is identical", message: "You should come up with something new")
+            return
+        }
         withAnimation {
             usedWords.insert(answer, at: 0)
         }
@@ -67,6 +75,14 @@ struct ContentView: View {
         return misspelledRange.location == NSNotFound
     }
     
+    func isShort(word: String) -> Bool {
+        return word.count > 3
+    }
+    
+    func isSame(word: String) -> Bool {
+        return word != rootWord
+    }
+    
     func wordError(title: String, message: String) {
         errorTitle = title
         errorMessage = message
@@ -76,6 +92,21 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             List {
+                Section {
+                    HStack {
+                        Text(rootWord)
+                            .font(.largeTitle.bold())
+                            .foregroundColor(.green)
+                        Spacer()
+                        Button(action: {
+                            startGame()
+                            usedWords = []
+                        }, label: {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                        })
+                    }
+                    .padding(.vertical)
+                }
                 Section {
                     TextField("Enter your word", text: $newWord)
                         .autocapitalization(.none)
@@ -89,9 +120,11 @@ struct ContentView: View {
                             Text(word)
                         }
                     }
+                } header: {
+                    Text("Previous guesses")
                 }
             }
-            .navigationTitle(rootWord)
+            .navigationTitle("WordScramble")
             .onSubmit {
                 addNewWord()
             }
